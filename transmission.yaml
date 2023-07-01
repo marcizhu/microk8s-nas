@@ -1,0 +1,173 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: transmission
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: transmission
+  namespace: transmission
+  labels:
+    app: transmission
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+        - name: transmission-container
+          image: ghcr.io/linuxserver/transmission:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9091
+              protocol: TCP
+            - containerPort: 51413
+              protocol: TCP
+              hostPort: 51413
+            - containerPort: 51413
+              protocol: UDP
+              hostPort: 51413
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_BIND_SERVICE
+          volumeMounts:
+            - mountPath: /downloads
+              name: downloads-volume
+            - mountPath: /config
+              name: config-volume
+            - mountPath: /watch
+              name: watch-volume
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Madrid"
+      volumes:
+        - name: downloads-volume
+          persistentVolumeClaim:
+            claimName: transmission-downloads
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: transmission-config
+        - name: watch-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: transmission-downloads
+  namespace: transmission
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /home/marc/downloads/transmission
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: transmission-config
+  namespace: transmission
+spec:
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /opt/transmission/config
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: transmission-downloads
+  namespace: transmission
+spec:
+  volumeName: transmission-downloads
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: transmission-config
+  namespace: transmission
+spec:
+  volumeName: transmission-config
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transmission-ui
+  namespace: transmission
+spec:
+  type: ClusterIP
+  selector:
+    app: transmission
+  ports:
+    - name: web-ui
+      port: 80
+      targetPort: 9091
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: transmission
+  namespace: transmission
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: transmission.nas-local.io
+      http:
+        paths:
+          - backend:
+              service:
+                name: transmission-ui
+                port:
+                  name: web-ui
+            path: /
+            pathType: Prefix
