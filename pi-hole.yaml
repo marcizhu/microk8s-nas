@@ -1,0 +1,232 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pi-hole
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pi-hole
+  namespace: pi-hole
+data:
+  TZ: "Europe/Madrid"
+  VIRTUAL_HOST: "pi-hole.nas-local.io"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pihole-password
+  namespace: pi-hole
+type: Opaque
+data:
+  WEBPASSWORD: "<password>"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pi-hole
+  name: pi-hole
+  namespace: pi-hole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pi-hole
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pi-hole
+    spec:
+      containers:
+        - image: pihole/pihole:latest
+          name: pihole
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              memory: 128Mi
+          ports:
+            - containerPort: 53
+              name: dns
+              protocol: UDP
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+            - containerPort: 80
+              name: admin
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: pi-hole
+            - secretRef:
+                name: pihole-password
+          volumeMounts:
+            - mountPath: /etc/pihole/
+              name: etc-pihole
+            - mountPath: /etc/dnsmasq.d/
+              name: etc-dnsmasq
+      volumes:
+        - name: etc-pihole
+          persistentVolumeClaim:
+            claimName: etc-pihole
+        - name: etc-dnsmasq
+          persistentVolumeClaim:
+            claimName: etc-dnsmasq
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: etc-pihole
+  namespace: pi-hole
+spec:
+  capacity:
+    storage: 500Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /home/marc/pihole/vol1
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: etc-dnsmasq
+  namespace: pi-hole
+spec:
+  capacity:
+    storage: 500Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /home/marc/pihole/vol2
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: etc-pihole
+  namespace: pi-hole
+spec:
+  volumeName: etc-pihole
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: etc-dnsmasq
+  namespace: pi-hole
+spec:
+  volumeName: etc-dnsmasq
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns-udp
+  namespace: pi-hole
+  labels:
+    app: dns-udp
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.12
+    metallb.universe.tf/allow-shared-ip: dns-ip
+spec:
+  ports:
+  - name: dns-udp
+    port: 53
+    protocol: UDP
+    targetPort: dns
+  selector:
+    app: pi-hole
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns-tcp
+  namespace: pi-hole
+  labels:
+    app: dns-tcp
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.12
+    metallb.universe.tf/allow-shared-ip: dns-ip
+spec:
+  ports:
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: dns-tcp
+  selector:
+    app: pi-hole
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin
+  namespace: pi-hole
+  labels:
+    app: admin
+spec:
+  ports:
+    - name: admin
+      port: 80
+      protocol: TCP
+      targetPort: admin
+  selector:
+    app: pi-hole
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pihole-ingress
+  namespace: pi-hole
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: pi-hole.nas-local.io
+      http:
+        paths:
+          - backend:
+              service:
+                name: admin
+                port:
+                  name: admin
+            path: /
+            pathType: Prefix
