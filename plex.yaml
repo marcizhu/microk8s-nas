@@ -1,0 +1,200 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: plex
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      containers:
+      - name: plex
+        image: "plexinc/pms-docker:1.32.4.7195-7c8f9d3b6"
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /identity
+            port: 32400
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /identity
+            port: 32400
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
+        ports:
+          - name: pms
+            containerPort: 32400
+          - name: http
+            containerPort: 32400
+          - name: https
+            containerPort: 32443
+        env:
+        - name: TZ
+          value: "Europe/Madrid"
+        # TODO: move this to a secret?
+        - name: PLEX_CLAIM
+          value: "claim-XXXXXXXXXXXXXXXX"
+        - name: TRANSCODE_PVC
+          value: "plex-transcode"
+        - name: DATA_PVC
+          value: "plex-data"
+        - name: CONFIG_PVC
+          value: "plex-config"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: config
+          mountPath: /config
+        - name: transcode
+          mountPath: /transcode
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: "plex-data"
+      - name: config
+        persistentVolumeClaim:
+          claimName: "plex-config"
+      - name: transcode
+        persistentVolumeClaim:
+          claimName: "plex-transcode"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: plex-data
+  namespace: plex
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/nas
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-data
+  namespace: plex
+spec:
+  volumeName: plex-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: local-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-config
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-transcode
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+  selector:
+    app: plex
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-external
+  namespace: plex
+  labels:
+    app: plex
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.12
+    metallb.universe.tf/allow-shared-ip: dns-ip
+spec:
+  ports:
+    - name: pms
+      port: 32400
+      protocol: TCP
+      targetPort: pms
+  selector:
+    app: plex
+  type: LoadBalancer
+---
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: plex.nas-local.io
+      http:
+        paths:
+          - backend:
+              service:
+                name: plex
+                port:
+                  name: http
+            path: /
+            pathType: Prefix
