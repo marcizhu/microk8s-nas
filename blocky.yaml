@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: blocky
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blocky-config
+  namespace: blocky
+data:
+  config.yml: |
+    upstream:
+      default:
+        - 8.8.8.8
+        - 8.8.4.4
+        - 1.1.1.1
+    blocking:
+      blackLists:
+        ads:
+          - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+        adult:
+          - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
+          - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-only/hosts
+        fakenews:
+          - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+      clientGroupsBlock:
+        default:
+          - ads
+          - adult
+          - fakenews
+      blockType: zeroIp
+    customDNS:
+      customTTL: 1h
+      mapping:
+        nas-local.io: 192.168.1.15
+    prometheus:
+      enable: true
+      path: /metrics
+    ports:
+      dns: 53
+      # tls: 853
+      http: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blocky
+  namespace: blocky
+  labels:
+    app: blocky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blocky
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: blocky
+    spec:
+      containers:
+        - image: spx01/blocky:latest
+          name: blocky
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              memory: 128Mi
+          ports:
+            - containerPort: 53
+              name: dns-udp
+              protocol: UDP
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+            - containerPort: 4000
+              name: metrics
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "Europe/Madrid"
+            - name: BLOCKY_CONFIG_FILE
+              value: /config/config.yml
+          volumeMounts:
+            - mountPath: /config/
+              name: blocky-config
+      volumes:
+        - name: blocky-config
+          configMap:
+            name: blocky-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns-udp
+  namespace: blocky
+  labels:
+    app: blocky
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.12
+    metallb.universe.tf/allow-shared-ip: dns-ip
+spec:
+  selector:
+    app: blocky
+  ports:
+  - name: dns-udp
+    port: 53
+    protocol: UDP
+    targetPort: dns-udp
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns-tcp
+  namespace: blocky
+  labels:
+    app: blocky
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 192.168.1.12
+    metallb.universe.tf/allow-shared-ip: dns-ip
+spec:
+  selector:
+    app: blocky
+  ports:
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: dns-tcp
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin
+  namespace: blocky
+  labels:
+    app: blocky
+spec:
+  selector:
+    app: blocky
+  ports:
+    - name: metrics
+      port: 4000
+      protocol: TCP
+      targetPort: metrics
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: blocky
+  labels:
+    app: blocky
+  namespace: blocky
+spec:
+  selector:
+    matchLabels:
+      app: blocky
+  endpoints:
+    - interval: 30s
+      port: metrics
