@@ -76,7 +76,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /home/marc/downloads/transmission
+    path: /mnt/nas/transmission
   nodeAffinity:
     required:
       nodeSelectorTerms:

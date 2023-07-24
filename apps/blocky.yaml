@@ -12,9 +12,9 @@ data:
   config.yml: |
     upstream:
       default:
-        - 8.8.8.8
-        - 8.8.4.4
-        - 1.1.1.1
+        - 8.8.8.8 # Google DNS
+        - 8.8.4.4 # Google DNS
+        - 1.1.1.1 # Cloudflare DNS
     blocking:
       blackLists:
         ads:
@@ -39,7 +39,6 @@ data:
       path: /metrics
     ports:
       dns: 53
-      # tls: 853
       http: 4000
 ---
 apiVersion: apps/v1
