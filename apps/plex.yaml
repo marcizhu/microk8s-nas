@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: plex
-        image: "plexinc/pms-docker:1.32.4.7195-7c8f9d3b6"
+        image: plexinc/pms-docker:1.32.4.7195-7c8f9d3b6
         imagePullPolicy: IfNotPresent
         readinessProbe:
           httpGet:
