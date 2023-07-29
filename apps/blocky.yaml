@@ -30,6 +30,9 @@ data:
           - adult
           - fakenews
       blockType: zeroIp
+    caching:
+      minTime: 30m
+      prefetching: true
     customDNS:
       customTTL: 1h
       mapping:
@@ -112,6 +115,7 @@ spec:
     port: 53
     protocol: UDP
     targetPort: dns-udp
+  externalTrafficPolicy: Local
   type: LoadBalancer
 ---
 apiVersion: v1
@@ -132,6 +136,7 @@ spec:
       port: 53
       protocol: TCP
       targetPort: dns-tcp
+  externalTrafficPolicy: Local
   type: LoadBalancer
 ---
 apiVersion: v1
