@@ -12,7 +12,7 @@ data:
   config.json: |-
     {
       "repositories": ["marcizhu/microk8s-nas"],
-      "dryRun" : "false",
+      "dryRun" : null,
       "kubernetes": {
         "fileMatch": ["apps/.+\\.yaml$"]
       }
@@ -26,6 +26,8 @@ metadata:
   namespace: renovate
 spec:
   schedule: '@hourly'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
