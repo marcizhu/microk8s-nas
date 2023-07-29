@@ -67,7 +67,7 @@ spec:
         app: blocky
     spec:
       containers:
-        - image: spx01/blocky:latest
+        - image: spx01/blocky:v0.21
           name: blocky
           resources:
             limits:
