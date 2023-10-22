@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gickup
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gickup-config
+  namespace: gickup
+data:
+  config.yml: |-
+    source:
+      github:
+        - token_file: /etc/gickup/github-token.tkn
+          user: marcizhu
+          wiki: true
+          excludeorgs:
+            - rebythecode
+            - Teamwork
+    destination:
+      local:
+        - path: /backups/
+          structured: true
+          zip: true
+          keep: 5
+          bare: true
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gickup
+  namespace: gickup
+spec:
+  schedule: '@hourly'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - image: buddyspencer/gickup:0.10.21
+              name: gickup
+              args:
+                - /opt/gickup/config.yml
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /opt/gickup/
+                - name: secrets-volume
+                  mountPath: /etc/gickup/
+                - name: gickup-backups
+                  mountPath: /backups/
+          restartPolicy: Never
+          volumes:
+            - name: config-volume
+              configMap:
+                name: gickup-config
+            - name: secrets-volume
+              secret:
+                secretName: gickup-secrets
+            - name: gickup-backups
+              persistentVolumeClaim:
+                claimName: gickup-backups
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gickup-backups
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/nas/Backups
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - nas-local
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gickup-backups
+  namespace: gickup
+spec:
+  volumeName: gickup-backups
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-storage

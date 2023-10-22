@@ -45,6 +45,7 @@ Total RAM: 16 GB
 
 - [Transmission](https://transmissionbt.com): A fast, easy and free torrent client for macOS, Windows and Linux
 - [Plex](https://www.plex.tv/): A library for all your videos, movies and series, allowing to watch them on you phone, smart TV, computer, etc.
+- [Gickup](https://github.com/cooperspencer/gickup): A simple tool to backup all my repositories locally to my NAS
 
 ## 🌐 Network configuration
 
