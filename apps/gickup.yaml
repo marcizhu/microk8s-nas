@@ -32,7 +32,7 @@ metadata:
   name: gickup
   namespace: gickup
 spec:
-  schedule: '@hourly'
+  schedule: '0 18 * * *'
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
