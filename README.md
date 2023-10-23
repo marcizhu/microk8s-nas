@@ -11,7 +11,7 @@
 
 Lightweight single-node [MicroK8s](https://microk8s.io) cluster for my home NAS running [Ubuntu Server](https://ubuntu.com/download/server).
 
-## 💻 Nodes
+## :computer:&nbsp; Nodes
 
 | Device                       | CPU                 | OS Disk       | Data Disk   | RAM   | OS            | Purpose     |
 | :--------------------------- | :------------------ | :------------ | :---------- | :---- | :------------ | :---------- |
@@ -25,7 +25,7 @@ Total RAM: 16 GB
 - RAID: All three disks are in a RAID 5 configuration for redundancy.
 - NFS Server: The NFS server runs on the host machine outside Kubernetes and allows connecting to the RAID array from outside the node
 
-## Cluster components
+## :art:&nbsp; Cluster components
 
 ### Networking
 
@@ -47,7 +47,7 @@ Total RAM: 16 GB
 - [Plex](https://www.plex.tv/): A library for all your videos, movies and series, allowing to watch them on you phone, smart TV, computer, etc.
 - [Gickup](https://github.com/cooperspencer/gickup): A simple tool to backup all my repositories locally to my NAS
 
-## 🌐 Network configuration
+## :globe_with_meridians:&nbsp; Network configuration
 
 The service Blocky deployed in-cluster has three purposes:
 
@@ -60,13 +60,13 @@ deployed through the subdomains `*.nas-local.io`. NGINX Ingress will route the r
 
 Thanks to MetalLB, any non-HTTP service can be deployed on its own IP address, so that it doesn't interfere with other services.
 
-## 🔧 Maintenance
+## :wrench:&nbsp; Maintenance
 
 Maintenance of the cluster is fairly minimal thanks to Renovate and ArgoCD: an hourly cronjob runs renovate bot, which will
 create PRs in this repo to update docker images in the cluster. Then, ArgoCD will apply any PR merged into `master` automatically,
 keeping everything up-to-date with minimal interaction.
 
-## Repository structure
+## :open_file_folder:&nbsp; Repository structure
 
 The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some CRDs needed to bootstrap the cluster, but they are not needed afterwards.
 
