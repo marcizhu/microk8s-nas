@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: transmission-container
-          image: ghcr.io/linuxserver/transmission:4.0.4
+          image: ghcr.io/linuxserver/transmission:4.0.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9091
