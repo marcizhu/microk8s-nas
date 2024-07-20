@@ -29,7 +29,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       containers:
-      - image: grafana/grafana:10.4.1
+      - image: grafana/grafana:10.4.5
         name: grafana
         env: []
         ports:
