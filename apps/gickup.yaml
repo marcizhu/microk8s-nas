@@ -41,7 +41,7 @@ spec:
       template:
         spec:
           containers:
-            - image: buddyspencer/gickup:0.10.31
+            - image: buddyspencer/gickup:0.10.36
               name: gickup
               args:
                 - /opt/gickup/config.yml
