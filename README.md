@@ -15,7 +15,7 @@ Lightweight single-node [MicroK8s](https://microk8s.io) cluster for my home NAS 
 
 | Device                       | CPU                 | OS Disk       | Data Disk   | RAM   | OS            | Purpose     |
 | :--------------------------- | :------------------ | :------------ | :---------- | :---- | :------------ | :---------- |
-| Lenovo ThinkCentre M700 Tiny | Intel Core i5-6400T | 1x 256 GB SSD | 3x 2 Tb HDD | 16 GB | Ubuntu Server | NAS/NFS/k8s |
+| Lenovo ThinkCentre M700 Tiny | Intel Core i5-6400T | 1x 256 GB SSD | 3x 2 TB HDD | 16 GB | Ubuntu Server | NAS/NFS/k8s |
 
 Total CPU: 8 threads  
 Total RAM: 16 GB
