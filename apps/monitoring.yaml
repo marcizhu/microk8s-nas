@@ -13,11 +13,26 @@ spec:
       values: |
         grafana:
           replicas: 1
+          adminPassword: "admin"
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            hosts:
+              - grafana.nas-local.io
+            path: /
           service:
             type: ClusterIP
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              searchNamespace: monitoring
+            datasources:
+              enabled: true
+              label: grafana_datasource
+              searchNamespace: monitoring
         prometheus:
           prometheusSpec:
-            # Single-node optimization: prevent it from waiting for other nodes
             retention: 2d
             storageSpec:
               volumeClaimTemplate:
