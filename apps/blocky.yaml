@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blocky
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://k8s-home-lab.github.io/helm-charts/
+    chart: blocky
+    targetRevision: 11.2.1
+    helm:
+      values: |
+        config: |
+          upstream:
+            default:
+              - 8.8.8.8 # Google DNS
+              - 8.8.4.4 # Google DNS
+              - 1.1.1.1 # Cloudflare DNS
+          blocking:
+            blackLists:
+              ads:
+                - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+              adult:
+                - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
+                - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-only/hosts
+              fakenews:
+                - https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts
+            clientGroupsBlock:
+              default:
+                - ads
+                - adult
+                - fakenews
+            blockType: zeroIp
+          caching:
+            minTime: 30m
+            prefetching: true
+          customDNS:
+            customTTL: 1h
+            mapping:
+              nas-local.io: 192.168.1.15
+          prometheus:
+            enable: true
+            path: /metrics
+          ports:
+            dns: 53
+            http: 4000
+        service:
+          main:
+            enabled: true
+            type: LoadBalancer
+            annotations:
+              metallb.universe.tf/loadBalancerIPs: "192.168.1.12"
+            externalTrafficPolicy: Local
+            ports:
+              dns-tcp:
+                enabled: true
+                port: 53
+                protocol: TCP
+                targetPort: 53
+              dns-udp:
+                enabled: true
+                port: 53
+                protocol: UDP
+                targetPort: 53
+              http:
+                enabled: true
+                port: 4000
+                protocol: TCP
+                targetPort: 4000
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: networking
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
