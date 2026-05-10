@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 84.5.0
+    helm:
+      values: |
+        grafana:
+          replicas: 1
+          service:
+            type: ClusterIP
+        prometheus:
+          prometheusSpec:
+            # Single-node optimization: prevent it from waiting for other nodes
+            retention: 2d
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: microk8s-hostpath
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 1Gi
+        prometheusOperator:
+          enabled: true
+          admissionWebhooks:
+            enabled: false
+            patch:
+              enabled: false
+          tls:
+            enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
