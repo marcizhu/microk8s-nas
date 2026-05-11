@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: open-webui
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://helm.openwebui.com
+    chart: open-webui
+    targetRevision: 14.5.0
+    helm:
+      values: |
+        replicaCount: 1
+        ollama:
+          enabled: false
+        pipelines:
+          enabled: false
+        tika:
+          enabled: false
+        websocket:
+          enabled: false
+          redis:
+            enabled: false
+        persistence:
+          enabled: true
+          size: 2Gi
+          storageClass: microk8s-hostpath
+          accessModes:
+            - ReadWriteOnce
+        ingress:
+          enabled: true
+          class: nginx
+          host: open-webui.nas-local.io
+          annotations:
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: open-webui
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
