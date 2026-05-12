@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: renovate-config
+  namespace: renovate
+data:
+  config.json: |-
+    {
+      "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+      "repositories": ["marcizhu/microk8s-nas"],
+      "dryRun": null,
+      "argocd": {
+        "fileMatch": ["apps/.+\\.yaml$"]
+      },
+      "packageRules": [
+        {
+          "matchManagers": ["argocd"],
+          "matchPackageNames": ["argo-cd"],
+          "automerge": false,
+          "labels": ["argocd-upgrade"]
+        }
+      ]
+    }
