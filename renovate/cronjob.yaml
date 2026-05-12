@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: renovate-bot
+  namespace: renovate
+spec:
+  schedule: '@hourly'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - image: renovate/renovate:39.215.2
+              name: renovate-bot
+              env:
+                - name: RENOVATE_PLATFORM
+                  value: 'github'
+                - name: RENOVATE_GIT_AUTHOR
+                  value: 'Renovate Bot <bot@renovateapp.com>'
+                - name: RENOVATE_AUTODISCOVER
+                  value: 'false'
+                - name: RENOVATE_BASE_DIR
+                  value: '/tmp/renovate/'
+                - name: RENOVATE_CONFIG_FILE
+                  value: '/opt/renovate/config.json'
+                - name: LOG_LEVEL
+                  value: info
+                - name: RENOVATE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: renovate-secrets
+                      key: RENOVATE_TOKEN
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /opt/renovate/
+                - name: work-volume
+                  mountPath: /tmp/renovate/
+          restartPolicy: Never
+          volumes:
+            - name: config-volume
+              configMap:
+                name: renovate-config
+            - name: work-volume
+              emptyDir: {}
