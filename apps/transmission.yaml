@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: transmission
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://media-servarr.shw.al/charts
+    chart: transmission
+    targetRevision: 0.4.x
+    helm:
+      values: |
+        image:
+          repository: linuxserver/transmission
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+          - name: TZ
+            value: "Europe/Madrid"
+        application:
+          urlBase: ''
+        service:
+          type: ClusterIP
+          port: 9091
+        ingress:
+          enabled: true
+          className: nginx
+          host: transmission.nas-local.io
+        persistence:
+          config:
+            enabled: true
+            size: 1Gi
+            storageClass: microk8s-hostpath
+          media:
+            enabled: true
+            type: hostPath
+            hostPath: /mnt/nas/Media
+            mountPath: /data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: transmission
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
