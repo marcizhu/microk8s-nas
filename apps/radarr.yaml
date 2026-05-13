@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://media-servarr.shw.al/charts
     chart: radarr
-    targetRevision: 0.20.x
+    targetRevision: 1.4.x
     helm:
       values: |
         application:
