@@ -1,0 +1,85 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: radarr
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://media-servarr.shw.al/charts
+    chart: radarr
+    targetRevision: 0.6.x
+    helm:
+      values: |
+        application:
+          port: 7878
+          urlBase: ''
+          config:
+            filename: 'config.xml'
+            secrets: [ 'apiKey' ]
+            mountPath: '/config/config.xml'
+            contents: |
+              <Config>
+                <LogLevel>info</LogLevel>
+                <EnableSsl>False</EnableSsl>
+                <Port>7878</Port>
+                <UrlBase></UrlBase>
+                <BindAddress>*</BindAddress>
+                <ApiKey>$apiKey</ApiKey>
+                <AnalyticsEnabled>False</AnalyticsEnabled>
+                <AuthenticationMethod>External</AuthenticationMethod>
+                <UpdateMechanism>Docker</UpdateMechanism>
+                <Branch>master</Branch>
+                <InstanceName>Radarr</InstanceName>
+              </Config>
+        deployment:
+          container:
+            image:
+              repository: 'lscr.io/linuxserver/radarr'
+            env:
+              - name: 'PUID'
+                value: '1000'
+              - name: 'PGID'
+                value: '1000'
+              - name: 'TZ'
+                value: 'Europe/Madrid'
+            volumeMounts:
+              - name: 'config'
+                mountPath: '/config'
+              - name: 'data'
+                mountPath: '/data'
+          volumes:
+            config:
+              persistentVolumeClaim:
+                claimName: 'radarr-config'
+            data:
+              hostPath:
+                path: /mnt/nas/Media
+                type: Directory
+        persistentVolumeClaims:
+          radarr-config:
+            accessMode: 'ReadWriteOnce'
+            requestStorage: '2Gi'
+            storageClassName: 'microk8s-hostpath'
+            selector: {}
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          host: radarr.nas-local.io
+          ingressClassName: nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: radarr
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
