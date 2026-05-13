@@ -11,12 +11,13 @@ spec:
     targetRevision: 1.4.x
     helm:
       values: |
+        secrets: []
         application:
           port: 7878
           urlBase: ''
           config:
             filename: 'config.xml'
-            secrets: [ 'apiKey' ]
+            secrets: []
             mountPath: '/config/config.xml'
             contents: |
               <Config>
@@ -25,7 +26,6 @@ spec:
                 <Port>7878</Port>
                 <UrlBase></UrlBase>
                 <BindAddress>*</BindAddress>
-                <ApiKey>$apiKey</ApiKey>
                 <AnalyticsEnabled>False</AnalyticsEnabled>
                 <AuthenticationMethod>External</AuthenticationMethod>
                 <UpdateMechanism>Docker</UpdateMechanism>
