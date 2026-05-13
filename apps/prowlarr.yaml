@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://media-servarr.shw.al/charts
     chart: prowlarr
-    targetRevision: 0.14.x
+    targetRevision: 0.22.x
     helm:
       values: |
         application:
