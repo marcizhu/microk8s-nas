@@ -1,0 +1,79 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prowlarr
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://media-servarr.shw.al/charts
+    chart: prowlarr
+    targetRevision: 0.14.x
+    helm:
+      values: |
+        application:
+          port: 9696
+          urlBase: ''
+          config:
+            filename: 'config.xml'
+            secrets: [ 'apiKey' ]
+            mountPath: '/config/config.xml'
+            contents: |
+              <Config>
+                <LogLevel>info</LogLevel>
+                <EnableSsl>False</EnableSsl>
+                <Port>9696</Port>
+                <UrlBase></UrlBase>
+                <BindAddress>*</BindAddress>
+                <ApiKey>$apiKey</ApiKey>
+                <AnalyticsEnabled>False</AnalyticsEnabled>
+                <AuthenticationMethod>External</AuthenticationMethod>
+                <UpdateMechanism>Docker</UpdateMechanism>
+                <Branch>main</Branch>
+                <InstanceName>Prowlarr</InstanceName>
+              </Config>
+        deployment:
+          container:
+            image:
+              repository: 'lscr.io/linuxserver/prowlarr'
+            env:
+              - name: 'PUID'
+                value: '1000'
+              - name: 'PGID'
+                value: '1000'
+              - name: 'TZ'
+                value: 'Europe/Madrid'
+            volumeMounts:
+              - name: 'config'
+                mountPath: '/config'
+          volumes:
+            config:
+              persistentVolumeClaim:
+                claimName: 'prowlarr-config'
+        persistentVolumeClaims:
+          prowlarr-config:
+            accessMode: 'ReadWriteOnce'
+            requestStorage: '1Gi'
+            storageClassName: 'microk8s-hostpath'
+            selector: {}
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          host: prowlarr.nas-local.io
+          className: nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prowlarr
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
