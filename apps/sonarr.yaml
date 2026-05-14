@@ -1,0 +1,85 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sonarr
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://media-servarr.shw.al/charts
+    chart: sonarr
+    targetRevision: 0.6.x
+    helm:
+      values: |
+        secrets: []
+        application:
+          port: 8989
+          urlBase: ''
+          config:
+            filename: 'config.xml'
+            secrets: []
+            mountPath: '/config/config.xml'
+            contents: |
+              <Config>
+                <LogLevel>info</LogLevel>
+                <EnableSsl>False</EnableSsl>
+                <Port>8989</Port>
+                <UrlBase></UrlBase>
+                <BindAddress>*</BindAddress>
+                <AnalyticsEnabled>False</AnalyticsEnabled>
+                <AuthenticationMethod>External</AuthenticationMethod>
+                <UpdateMechanism>Docker</UpdateMechanism>
+                <Branch>main</Branch>
+                <InstanceName>Sonarr</InstanceName>
+              </Config>
+        deployment:
+          container:
+            image:
+              repository: 'lscr.io/linuxserver/sonarr'
+            env:
+              - name: 'PUID'
+                value: '1000'
+              - name: 'PGID'
+                value: '1000'
+              - name: 'TZ'
+                value: 'Europe/Madrid'
+            volumeMounts:
+              - name: 'config'
+                mountPath: '/config'
+              - name: 'data'
+                mountPath: '/data'
+          volumes:
+            config:
+              persistentVolumeClaim:
+                claimName: 'sonarr-config'
+            data:
+              hostPath:
+                path: /mnt/nas/Media
+                type: Directory
+        persistentVolumeClaims:
+          sonarr-config:
+            accessMode: 'ReadWriteOnce'
+            requestStorage: '2Gi'
+            storageClassName: 'microk8s-hostpath'
+            selector: {}
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          host: sonarr.nas-local.io
+          className: nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sonarr
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
