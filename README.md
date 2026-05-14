@@ -40,12 +40,21 @@ Total RAM: 16 GB
 - [Renovate](https://github.com/renovatebot/renovate): Universal dependency update tool to keep manifests up-to-date
 - [Prometheus](https://prometheus.io): A tool to scrape and store time-series metrics from other services
 - [Grafana](https://grafana.com): An open-source dashboard to monitor Kubernetes, storage and system metrics
+- [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): A Kubernetes controller and tool for one-way encrypted Secrets
 
-### Applications
+### Multimedia
 
+- [Jellyfin](https://jellyfin.org): A library for all your videos, movies and series, allowing to watch them on you phone, smart TV, computer, etc.
+- [Prowlarr](https://prowlarr.org): An advanced, open-source media management tool designed to automate the process of finding, downloading, and organizing content from Usenet and torrent indexers
+- [Radarr](https://radarr.org): A powerful movie manager that lets you organize, track, and automate downloads of films across multiple clients effortlessly
+- [Sonarr](https://sonarr.tv): A PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them
 - [Transmission](https://transmissionbt.com): A fast, easy and free torrent client for macOS, Windows and Linux
-- [Plex](https://www.plex.tv/): A library for all your videos, movies and series, allowing to watch them on you phone, smart TV, computer, etc.
+
+### Miscelaneous
+
 - [Gickup](https://github.com/cooperspencer/gickup): A simple tool to backup all my repositories locally to my NAS
+- [Open WebUI](https://openwebui.com): Frontend for Ollama, LM Studio & more, allowing to chat with different local LLMs
+- [Renovate Bot](https://www.mend.io/renovate/): Automatically detects outdated packages and delivers updates as pull requests to selected repos
 
 ## :globe_with_meridians:&nbsp; Network configuration
 
@@ -55,23 +64,23 @@ The service Blocky deployed in-cluster has three purposes:
 2. DNS-level ad-filtering, similar to Pi-Hole. Blocks ads, adult content, etc
 3. Custom domain: resolves any subdomain `*.nas-local.io` to the cluster's IP
 
-By configuring the cluster as the primary DNS in the router, any device connected by DHCP will be able to access any service
-deployed through the subdomains `*.nas-local.io`. NGINX Ingress will route the requests depending on the `Host:` HTTP header.
+By configuring the cluster as the primary DNS in the router, any device connected by DHCP will be able to access any service deployed through the subdomains `*.nas-local.io`. NGINX Ingress will route the requests depending on the `Host:` HTTP header.
 
 Thanks to MetalLB, any non-HTTP service can be deployed on its own IP address, so that it doesn't interfere with other services.
 
 ## :wrench:&nbsp; Maintenance
 
 Maintenance of the cluster is fairly minimal thanks to Renovate and ArgoCD: an hourly cronjob runs renovate bot, which will
-create PRs in this repo to update docker images in the cluster. Then, ArgoCD will apply any PR merged into `master` automatically,
-keeping everything up-to-date with minimal interaction.
+create PRs in this repo to update docker images and Helm charts in the cluster. Then, ArgoCD will apply any PR merged into `master` automatically, keeping everything up-to-date with minimal interaction.
 
 ## :open_file_folder:&nbsp; Repository structure
 
-The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some CRDs needed to bootstrap the cluster, but they are not needed afterwards.
+The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some scripts needed to bootstrap the cluster, but they are not needed afterwards.
 
 ```
 📁 (root)
-├─📁 apps       # cluster apps, usually one file per application
-├─📁 bootstrap  # CRDs and other resources for setting up the cluster
+├── 📁 apps       # ArgoCD apps, usually one file per application
+│   ├── 📁 gickup   # Manifest files for gickup
+│   └── 📁 renovate # Manifest files for Renovate Bot
+└── 📁 bootstrap  # Scripts and other resources for setting up the cluster
 ```
