@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/marcizhu/microk8s-nas.git
     targetRevision: HEAD
-    path: renovate
+    path: apps/renovate
   destination:
     server: https://kubernetes.default.svc
     namespace: renovate
