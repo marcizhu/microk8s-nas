@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gickup-config
+  namespace: gickup
+data:
+  config.yml: |-
+    source:
+      github:
+        - token: GITHUB_TOKEN
+          user: marcizhu
+          wiki: true
+          excludeorgs:
+            - rebythecode
+            - Teamwork
+    destination:
+      local:
+        - path: /backups/
+          structured: true
+          zip: true
+          keep: 5
+          bare: true

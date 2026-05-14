@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gickup
+  namespace: gickup
+spec:
+  schedule: '0 18 * * *'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - image: buddyspencer/gickup:0.10.36
+              name: gickup
+              args:
+                - /opt/gickup/config.yml
+              env:
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: gickup-secrets
+                      key: github-token
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /opt/gickup/
+                - name: gickup-backups
+                  mountPath: /backups/
+          restartPolicy: Never
+          volumes:
+            - name: config-volume
+              configMap:
+                name: gickup-config
+            - name: gickup-backups
+              persistentVolumeClaim:
+                claimName: gickup-backups
