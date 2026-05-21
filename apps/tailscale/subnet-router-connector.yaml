@@ -1,0 +1,16 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: nas-subnet-router
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  hostname: nas-subnet-router
+  tags:
+    - "tag:k8s"
+  subnetRouter:
+    advertiseRoutes:
+      # MetalLB IP — blocky DNS
+      - "192.168.1.12/32"
+      # NAS host IP — NGINX ingress
+      - "192.168.1.15/32"

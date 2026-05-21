@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tailscale-operator
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tailscale
+  sources:
+    - repoURL: https://pkgs.tailscale.com/helmcharts
+      chart: tailscale-operator
+      targetRevision: 1.96.5
+      helm:
+        values: |
+          installCRDs: true
+          operatorConfig:
+            defaultTags:
+              - "tag:k8s-operator"
+            hostname: "tailscale-operator"
+            logging: "info"
+          oauth: {}
+    # This folder should contain:
+    #   - operator-oauth-sealed.yaml   (the sealed OAuth credentials)
+    #   - nas-subnet-router-connector.yaml  (the Connector CRD)
+    - repoURL: https://github.com/marcizhu/microk8s-nas.git
+      targetRevision: master
+      path: apps/tailscale
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
