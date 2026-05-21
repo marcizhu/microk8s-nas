@@ -33,6 +33,7 @@ Total RAM: 16 GB
 - [Calico](https://www.tigera.io/project-calico/): Container networking with IPv6 support and policy enforcement
 - [MetalLB](https://github.com/metallb/metallb): A network load-balancer implementation for Kubernetes using standard routing protocols
 - [NGINX Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress-NGINX Controller for Kubernetes
+- [Tailscale](https://tailscale.com): Private VPN server to access the NAS from anywhere as if I was at home
 
 ### Infrastructure
 
@@ -45,9 +46,9 @@ Total RAM: 16 GB
 ### Multimedia
 
 - [Jellyfin](https://jellyfin.org): A library for all your videos, movies and series, allowing to watch them on you phone, smart TV, computer, etc.
-- [Prowlarr](https://prowlarr.org): An advanced, open-source media management tool designed to automate the process of finding, downloading, and organizing content from Usenet and torrent indexers
-- [Radarr](https://radarr.org): A powerful movie manager that lets you organize, track, and automate downloads of films across multiple clients effortlessly
-- [Sonarr](https://sonarr.tv): A PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them
+- [Prowlarr](https://prowlarr.org): An advanced media management tool to automate the process of managing content from torrent indexers
+- [Radarr](https://radarr.org): A powerful movie manager that lets you organize, track, and automate downloads of films effortlessly
+- [Sonarr](https://sonarr.tv): A PVR for torrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them
 - [Transmission](https://transmissionbt.com): A fast, easy and free torrent client for macOS, Windows and Linux
 
 ### Miscelaneous
@@ -79,8 +80,10 @@ The git repository contains the following directories. The main folder is `apps`
 
 ```
 📁 (root)
-├── 📁 apps       # ArgoCD apps, usually one file per application
-│   ├── 📁 gickup   # Manifest files for gickup
-│   └── 📁 renovate # Manifest files for Renovate Bot
-└── 📁 bootstrap  # Scripts and other resources for setting up the cluster
+├── 📁 apps          → ArgoCD apps, usually one file per application
+│   ├── 📁 gickup      → Manifest files for gickup
+│   ├── 📁 open-webui  → Manifest files for Open WebUI
+│   ├── 📁 renovate    → Manifest files for Renovate Bot
+│   └── 📁 tailscale   → Manifest files for Tailscale Operator
+└── 📁 bootstrap     → Scripts and other resources for setting up the cluster
 ```
