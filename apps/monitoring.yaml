@@ -58,6 +58,9 @@ spec:
               searchNamespace: monitoring
         prometheus:
           prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelector: {}
+            serviceMonitorNamespaceSelector: {}
             retention: 2d
             storageSpec:
               volumeClaimTemplate:
@@ -75,6 +78,45 @@ spec:
               enabled: false
           tls:
             enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: smartctl-exporter
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-smartctl-exporter
+    targetRevision: 0.16.1
+    helm:
+      values: |
+        containerSecurityContext:
+          privileged: true
+          runAsUser: 0
+        extraVolumes:
+          - name: dev
+            hostPath:
+              path: /dev
+              type: Directory
+        extraVolumeMounts:
+          - name: dev
+            mountPath: /dev
+        serviceMonitor:
+          enabled: true
+          additionalLabels:
+            release: kube-prometheus-stack
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
