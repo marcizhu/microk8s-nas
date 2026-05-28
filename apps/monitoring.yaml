@@ -11,6 +11,31 @@ spec:
     targetRevision: 85.4.0
     helm:
       values: |
+        nodeExporter:
+          extraArgs:
+            - "--collector.nfs"
+            - "--collector.raid"
+            - "--collector.diskstats"
+          extraVolumes:
+            - name: proc
+              hostPath:
+                path: /proc
+            - name: sys
+              hostPath:
+                path: /sys
+            - name: dev
+              hostPath:
+                path: /dev
+          extraVolumeMounts:
+            - name: proc
+              mountPath: /proc
+              readOnly: true
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: dev
+              mountPath: /dev
+              readOnly: true
         grafana:
           replicas: 1
           adminPassword: "admin"
