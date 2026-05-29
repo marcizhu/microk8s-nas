@@ -61,7 +61,7 @@ spec:
             serviceMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelector: {}
             serviceMonitorNamespaceSelector: {}
-            retention: 2d
+            retention: 7d
             storageSpec:
               volumeClaimTemplate:
                 spec:
