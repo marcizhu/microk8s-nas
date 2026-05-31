@@ -31,6 +31,7 @@ spec:
                 <UpdateMechanism>Docker</UpdateMechanism>
                 <Branch>master</Branch>
                 <InstanceName>Radarr</InstanceName>
+                <ApiKey>bf0fd3ce8fcf71b9aaeb9bd69032025c</ApiKey>
               </Config>
         deployment:
           container:

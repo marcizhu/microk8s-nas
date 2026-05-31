@@ -31,6 +31,7 @@ spec:
                 <UpdateMechanism>Docker</UpdateMechanism>
                 <Branch>main</Branch>
                 <InstanceName>Sonarr</InstanceName>
+                <ApiKey>fd5ca8511638bce1fbd9f10ddcd86733</ApiKey>
               </Config>
         deployment:
           container:

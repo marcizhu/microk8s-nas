@@ -31,6 +31,7 @@ spec:
                 <UpdateMechanism>Docker</UpdateMechanism>
                 <Branch>main</Branch>
                 <InstanceName>Prowlarr</InstanceName>
+                <ApiKey>50eaa90d312b101c9a7ff6f2755234b2</ApiKey>
               </Config>
         deployment:
           container:
