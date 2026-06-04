@@ -1,0 +1,95 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bazarr
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://media-servarr.shw.al/charts
+    chart: bazarr
+    targetRevision: 0.12.0
+    helm:
+      values: |
+        secrets: []
+        application:
+          port: 6767
+          urlBase: ''
+          config:
+            filename: 'config.yaml'
+            mountPath: '/config/config/config.yaml'
+            secrets: []
+            contents: |
+              ---
+              analytics:
+                enabled: false
+              auth:
+                apikey: 'e98cd133654f1b2198c8364739221923'
+                type: null
+              general:
+                ip: 0.0.0.0
+                port: 6767
+                base_url: ''
+                use_sonarr: false
+                use_radarr: false
+        deployment:
+          container:
+            image:
+              repository: 'lscr.io/linuxserver/bazarr'
+            livenessProbe:
+              httpGet:
+                path: '/system/status'
+                port: 'http'
+              initialDelaySeconds: 30
+            readinessProbe:
+              httpGet:
+                path: '/system/status'
+                port: 'http'
+              initialDelaySeconds: 15
+            env:
+              - name: 'PUID'
+                value: '1000'
+              - name: 'PGID'
+                value: '1000'
+              - name: 'TZ'
+                value: 'Europe/Madrid'
+            volumeMounts:
+              - name: 'config'
+                mountPath: '/config'
+              - name: 'data'
+                mountPath: '/data'
+          volumes:
+            config:
+              persistentVolumeClaim:
+                claimName: 'bazarr-config'
+            data:
+              hostPath:
+                path: /mnt/nas/Media
+                type: Directory
+        persistentVolumeClaims:
+          bazarr-config:
+            accessMode: 'ReadWriteOnce'
+            requestStorage: '2Gi'
+            storageClassName: 'microk8s-hostpath'
+            selector: {}
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          host: bazarr.nas-local.io
+          className: nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bazarr
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
