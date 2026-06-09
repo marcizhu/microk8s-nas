@@ -1,0 +1,7 @@
+# /etc/cron.d/microk8s-prune
+# Automated CTR cleanup for MicroK8s
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/snap/bin/
+
+# 1. Cleanup unused CTR images every Sunday at 12:00 AM
+0 0 * * 0 root microk8s ctr images prune --all

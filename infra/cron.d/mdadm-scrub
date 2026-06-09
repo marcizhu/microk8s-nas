@@ -1,0 +1,7 @@
+# /etc/cron.d/mdadm-scrub
+# Automated RAID scrubbing/checking
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# 3. Monthly RAID Scrub (1st Day of the Month at 3:00 AM)
+0 3 1 * * root echo "check" > /sys/block/md0/md/sync_action

@@ -1,0 +1,10 @@
+# /etc/cron.d/smart-tests
+# Automated SMART testing for RAID 5 HDDs (/dev/sdb, /dev/sdc, /dev/sdd)
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# 1. Short SMART test every day at 1:00 AM
+0 1 * * * root smartctl -t short /dev/sdb && smartctl -t short /dev/sdc && smartctl -t short /dev/sdd
+
+# 2. Long SMART test every Sunday at 2:00 AM
+0 2 * * 0 root smartctl -t long /dev/sdb && smartctl -t long /dev/sdc && smartctl -t long /dev/sdd
