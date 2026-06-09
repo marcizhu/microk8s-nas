@@ -49,6 +49,7 @@ Total RAM: 16 GB
 - [Prowlarr](https://prowlarr.org): An advanced media management tool to automate the process of managing content from torrent indexers
 - [Radarr](https://radarr.org): A powerful movie manager that lets you organize, track, and automate downloads of films effortlessly
 - [Sonarr](https://sonarr.tv): A PVR for torrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them
+- [Bazarr](http://www.bazarr.media): A companion app to Sonarr and Radarr that manages and downloads subtitles based on your preferences.
 - [Transmission](https://transmissionbt.com): A fast, easy and free torrent client for macOS, Windows and Linux
 
 ### Miscelaneous
@@ -76,14 +77,18 @@ create PRs in this repo to update docker images and Helm charts in the cluster. 
 
 ## :open_file_folder:&nbsp; Repository structure
 
-The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some scripts needed to bootstrap the cluster, but they are not needed afterwards.
+The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some scripts needed to bootstrap the cluster, but they are not needed afterwards. Finally, `infra` contains cron jobs and Systemd services that help manage the NAS more efficiently.
 
 ```
 📁 (root)
-├── 📁 apps          → ArgoCD apps, usually one file per application
-│   ├── 📁 gickup      → Manifest files for gickup
-│   ├── 📁 open-webui  → Manifest files for Open WebUI
-│   ├── 📁 renovate    → Manifest files for Renovate Bot
-│   └── 📁 tailscale   → Manifest files for Tailscale Operator
-└── 📁 bootstrap     → Scripts and other resources for setting up the cluster
+├── 📁 apps           → ArgoCD apps, usually one file per application
+│   ├── 📁 gickup       → Manifest files for gickup
+│   ├── 📁 open-webui   → Manifest files for Open WebUI
+│   ├── 📁 renovate     → Manifest files for Renovate Bot
+│   ├── 📁 tailscale    → Manifest files for Tailscale Operator
+│   └── 📁 transmission → Configmap with default configuration for Transmission
+├── 📁 bootstrap      → Scripts and other resources for bootstrapping the cluster
+└── 📁 infra          → Cron jobs and Systemd services for the host OS
+    ├── 📁 cron.d       → Cron jobs
+    └── 📁 systemd      → Systemd services & timers
 ```
