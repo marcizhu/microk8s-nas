@@ -3,10 +3,9 @@ kind: Application
 metadata:
   name: argocd
   namespace: argocd
-  # This annotation prevents the root-app from deleting ArgoCD
-  # even if prune is enabled
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-options: Prune=false
 spec:
   project: default
   source:
@@ -18,6 +17,11 @@ spec:
         configs:
           params:
             server.insecure: true
+          cm:
+            accounts.marcizhu: apiKey, login
+          rbac:
+            policy.csv: |
+              g, marcizhu, role:admin
         server:
           ingress:
             enabled: true
