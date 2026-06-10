@@ -1,1 +1,21 @@
-{}
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "argocd": {
+    "fileMatch": ["apps/.+\\.yaml$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["apps/.+/.+\\.yaml$"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["argocd"],
+      "matchPackageNames": ["argo-cd"],
+      "automerge": false
+    },
+    {
+      "matchPackageNames": ["renovate/renovate"],
+      "groupName": "renovate",
+	  "automerge": false
+    }
+  ]
+}
