@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/marcizhu/microk8s-nas.git
-    targetRevision: HEAD
+    targetRevision: master
     path: apps/
   destination:
     server: https://kubernetes.default.svc
