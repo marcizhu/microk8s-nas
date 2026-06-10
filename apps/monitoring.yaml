@@ -56,6 +56,10 @@ spec:
               enabled: true
               label: grafana_datasource
               searchNamespace: monitoring
+          persistence:
+            enabled: true
+            size: 2Gi
+            storageClassName: microk8s-hostpath
         prometheus:
           prometheusSpec:
             serviceMonitorSelectorNilUsesHelmValues: false
