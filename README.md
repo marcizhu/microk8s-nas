@@ -41,7 +41,7 @@ Total RAM: 16 GB
 - [Renovate](https://github.com/renovatebot/renovate): Universal dependency update tool to keep manifests up-to-date
 - [Prometheus](https://prometheus.io): A tool to scrape and store time-series metrics from other services
 - [Grafana](https://grafana.com): An open-source dashboard to monitor Kubernetes, storage and system metrics
-- [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): A Kubernetes controller and tool for one-way encrypted Secrets
+- [Sealed Secrets](https://github.com/bitnami/sealed-secrets): A Kubernetes controller and tool for one-way encrypted Secrets
 
 ### Multimedia
 
