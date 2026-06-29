@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://media-servarr.shw.al/charts
     chart: sonarr
-    targetRevision: 0.12.2
+    targetRevision: 0.12.3
     helm:
       values: |
         secrets: []
