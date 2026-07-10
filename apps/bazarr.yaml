@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://media-servarr.shw.al/charts
     chart: bazarr
-    targetRevision: 0.12.0
+    targetRevision: 0.13.0
     helm:
       values: |
         secrets: []
