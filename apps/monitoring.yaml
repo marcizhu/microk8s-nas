@@ -131,3 +131,50 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nut-exporter
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://DRuggeri.github.io/nut_exporter
+    chart: nut-exporter
+    targetRevision: 1.0.1
+    helm:
+      values: |
+        image:
+          repository: druggeri/nut_exporter
+          tag: "3.3.0" # TODO: Remove this, use chart image once reference to non-existing v3.2.6 is fixed
+        replicaCount: 1
+        podHostNetwork: true
+        env:
+          - name: NUT_EXPORTER_USERNAME
+            value: "monuser"
+        envSecret:
+          NUT_EXPORTER_PASSWORD: "monpass"
+        extraArgs:
+          - --nut.vars_enable=battery.charge,battery.voltage,battery.voltage.nominal,battery.runtime,input.voltage,input.voltage.nominal,input.frequency,ups.load,ups.status,ups.realpower.nominal,ups.beeper.status
+        serviceMonitor:
+          enabled: true
+          labels:
+            release: kube-prometheus-stack
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
