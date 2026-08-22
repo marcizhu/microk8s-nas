@@ -8,7 +8,7 @@ spec:
   sources:
     - repoURL: https://media-servarr.shw.al/charts
       chart: transmission
-      targetRevision: 0.16.x
+      targetRevision: 0.17.x
       helm:
         values: |
           application:
