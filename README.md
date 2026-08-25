@@ -77,7 +77,7 @@ create PRs in this repo to update docker images and Helm charts in the cluster. 
 
 ## :open_file_folder:&nbsp; Repository structure
 
-The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` contains some scripts needed to bootstrap the cluster, but they are not needed afterwards. Finally, `infra` contains cron jobs and Systemd services that help manage the NAS more efficiently.
+The git repository contains the following directories. The main folder is `apps`, which contains the Kubernetes manifests for all applications running in the cluster. The folder `bootstrap` holds numbered scripts to (re)build the cluster from scratch on a fresh machine, run in order: base setup, sealed-secrets key restore, optional RAID/NFS storage, and ArgoCD. Finally, `infra` contains the host-OS cron jobs and Systemd services (plus `sync-infra.sh`, which deploys them).
 
 ```
 📁 (root)
@@ -87,8 +87,9 @@ The git repository contains the following directories. The main folder is `apps`
 │   ├── 📁 renovate     → Manifest files for Renovate Bot
 │   ├── 📁 tailscale    → Manifest files for Tailscale Operator
 │   └── 📁 transmission → Configmap with default configuration for Transmission
-├── 📁 bootstrap      → Scripts and other resources for bootstrapping the cluster
-└── 📁 infra          → Cron jobs and Systemd services for the host OS
+├── 📁 bootstrap      → Numbered scripts to (re)build the cluster from scratch
+└── 📁 infra          → Host-OS automation (deployed by sync-infra.sh)
+    ├── 📄 sync-infra.sh → Installs the cron.d + systemd units onto the host
     ├── 📁 cron.d       → Cron jobs
     └── 📁 systemd      → Systemd services & timers
 ```
