@@ -12,13 +12,14 @@ spec:
       helm:
         values: |
           config: |
-            upstream:
-              default:
-                - 8.8.8.8 # Google DNS
-                - 8.8.4.4 # Google DNS
-                - 1.1.1.1 # Cloudflare DNS
+            upstreams:
+              groups:
+                default:
+                  - 8.8.8.8 # Google DNS
+                  - 8.8.4.4 # Google DNS
+                  - 1.1.1.1 # Cloudflare DNS
             blocking:
-              blackLists:
+              denylists:
                 ads:
                   - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
                 adult:
