@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://jellyfin.github.io/jellyfin-helm
     chart: jellyfin
-    targetRevision: 3.2.0
+    targetRevision: 3.6.0
     helm:
       values: |
         replicaCount: 1
